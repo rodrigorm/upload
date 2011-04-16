@@ -220,7 +220,7 @@ class UploadBehavior extends ModelBehavior {
 
 		App::import('Lib', 'Upload.Resize/Imagick');
 		$ResizeImagick = new ResizeImagick();
-		return $ResizeImagick->resize($srcFile, $destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
+		return $ResizeImagick->process($srcFile, $destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
 	}
 
 	function _resizePhp(&$model, $field, $path, $style, $geometry) {
@@ -234,7 +234,7 @@ class UploadBehavior extends ModelBehavior {
 
 		App::import('Lib', 'Upload.Resize/Php');
 		$ResizePhp = new ResizePhp();
-		return $ResizePhp->resize($srcFile, $destFile, $geometry);
+		return $ResizePhp->process($srcFile, $destFile, $geometry);
 	}
 
 	function _getPath(&$model, $field) {

@@ -20,7 +20,7 @@ class ResizePhpTestCase extends CakeTestCase {
 		$source = $path . 'panda.jpg';
 		$destination = $path . $style . '_panda.jpg';
 
-		$result = $this->ResizePhp->resize(
+		$result = $this->ResizePhp->process(
 			$source,
 			$destination,
 			$geometry

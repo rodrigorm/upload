@@ -93,4 +93,10 @@ class ImageGd extends Object {
 	public function setImageCompressionQuality() {
 		return null;
 	}
+
+	public function clear() {
+	}
+
+	public function destroy() {
+	}
 }
