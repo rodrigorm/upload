@@ -395,3 +395,50 @@ Check that the file is below the maximum width requirement
 		'message' => 'File is above the maximum width'
 	)
 );</code></pre>
+
+h2. Using the helper
+
+*UploadHelper::url($data, $field, $full = false)*
+
+Returns url to the uploaded file
+
+* $data - record from database, can be a @$this->Model->read()@ result or a association result like @hasMany@
+* $field - name of a field like this @Modelname.fieldname@ (would be @User.photo@ here)
+* $full - if true, the full base URL will be prepended to the result
+
+Assuming tha you have read a user from database and it's available in @$user@ variable in view with this:
+
+<pre><code>$user = array(
+	'User' => array(
+		'id' => 1,
+		'dir' => '1',
+		'photo' => 'Photo.png'
+	)
+);</code></pre>
+
+<pre><code><?php echo $upload->url($user, 'User.photo'); ?></code></pre>
+
+Will output @/files/user/photo/1/Photo.png@
+
+But when the user is fetched as one of many users associated by hasMany association to another model it could be something like:
+
+<pre><code>$data = array(
+	'User' => array(
+		0 => array(
+			'id' => 1,
+			'dir' => '1',
+			'photo' => 'Photo.png'
+		),
+		1 => array(
+			'id' => 2,
+			'dir' => '1',
+			'photo' => 'Photo2.png'
+		)
+	)
+);</code></pre>
+
+Then you should do:
+
+<pre><code><?php echo $upload->url($data['User'][0], 'User.photo') ?></code></pre>
+
+The helper is smart enough to figure out the structure of data you pass to it.
