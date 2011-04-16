@@ -699,5 +699,4 @@ class UploadBehavior extends ModelBehavior {
 		}
 		return $pathinfo;
 	}
-
 }

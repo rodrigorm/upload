@@ -474,4 +474,25 @@ class UploadBehaviorTest extends CakeTestCase {
 		$this->assertEqual(4, count($result['TestUpload']));
 	}
 
+	function testIsBelowMaxSize() {
+		$check = array(
+			'photo' => array(
+				'size' => 100
+			)
+		);
+		$maxSize = 200;
+		$result = $this->TestUpload->isBelowMaxSize($check, $maxSize);
+		$this->assertTrue($result);
+	}
+
+	function testIsAboveMinSize() {
+		$check = array(
+			'photo' => array(
+				'size' => 100
+			)
+		);
+		$minSize = 50;
+		$result = $this->TestUpload->isAboveMinSize($check, $minSize);
+		$this->assertTrue($result);
+	}
 }
