@@ -1,7 +1,7 @@
 <?php
 App::import('Helper', array('Upload.Upload', 'Html'));
 
-class TestUpload extends CakeTestModel {
+class TestUploadHelperUpload extends CakeTestModel {
 	var $alias = 'Upload';
 	var $useTable = 'uploads';
 	var $actsAs = array(
@@ -11,7 +11,7 @@ class TestUpload extends CakeTestModel {
 	);
 }
 
-class TestUser extends CakeTestModel {
+class TestUploadHelperTestUser extends CakeTestModel {
 	var $alias = 'User';
 	var $useTable = 'users';
 	var $actsAs = array(
@@ -26,7 +26,7 @@ class TestUser extends CakeTestModel {
 	);
 }
 
-class TestUploadController extends Controller {
+class TestUploadHelperUploadController extends Controller {
 }
 
 class UploadHelperTestCase extends CakeTestCase {
@@ -39,14 +39,14 @@ class UploadHelperTestCase extends CakeTestCase {
 		parent::startTest($method);
 		$this->Upload = new UploadHelper();
 		$this->Upload->Html = new HtmlHelper();
-		$this->Controller =& new TestUploadController();
+		$this->Controller =& new TestUploadHelperUploadController();
 		$this->View =& new View($this->Controller);
-		$this->TestUpload = ClassRegistry::init('TestUpload');
-		$this->TestUser = ClassRegistry::init('TestUser');
+		$this->TestUpload = ClassRegistry::init('TestUploadHelperUpload');
+		$this->TestUser = ClassRegistry::init('TestUploadHelperTestUser');
 
 		ClassRegistry::addObject('view', $this->View);
-		ClassRegistry::addObject('Upload', new TestUpload());
-		ClassRegistry::addObject('User', new TestUser());
+		ClassRegistry::addObject('Upload', new TestUploadHelperUpload());
+		ClassRegistry::addObject('User', new TestUploadHelperTestUser());
 
 		$this->record = array(
 			'Upload' => array(
