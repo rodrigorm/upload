@@ -218,40 +218,9 @@ class UploadBehavior extends ModelBehavior {
 			$destFile = $path . $pathInfo['filename'] . '_' . $style . '.' . $pathInfo['extension'];
 		}
 
-		$image    = new imagick($srcFile);
-		$height   = $image->getImageHeight();
-		$width    = $image->getImageWidth();
-
-		if (preg_match('/^\\[[\\d]+x[\\d]+\\]$/', $geometry)) {
-			// resize with banding
-			list($destW, $destH) = explode('x', substr($geometry, 1, strlen($geometry)-2));
-			$image->thumbnailImage($destW, $destH);
-		} elseif (preg_match('/^[\\d]+x[\\d]+$/', $geometry)) {
-			// cropped resize (best fit)
-			list($destW, $destH) = explode('x', $geometry);
-			$image->cropThumbnailImage($destW, $destH);
-		} elseif (preg_match('/^[\\d]+w$/', $geometry)) {
-			// calculate heigh according to aspect ratio
-			$image->thumbnailImage((int)$geometry-1, 0);
-		} elseif (preg_match('/^[\\d]+h$/', $geometry)) {
-			// calculate width according to aspect ratio
-			$image->thumbnailImage(0, (int)$geometry-1);
-		} elseif (preg_match('/^[\\d]+l$/', $geometry)) {
-			// calculate shortest side according to aspect ratio
-			$destW = 0;
-			$destH = 0;
-			$destW = ($width > $height) ? (int)$geometry-1 : 0;
-			$destH = ($width > $height) ? 0 : (int)$geometry-1;
-
-			$image->thumbnailImage($destW, $destH, true);
-		}
-
-		$image->setImageCompressionQuality($this->settings[$model->alias][$field]['thumbnailQuality']);
-		if (!$image->writeImage($destFile)) return false;
-
-		$image->clear();
-		$image->destroy();
-		return true;
+		App::import('Lib', 'Upload.Resize/Imagick');
+		$ResizeImagick = new ResizeImagick();
+		return $ResizeImagick->resize($srcFile, $destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
 	}
 
 	function _resizePhp(&$model, $field, $path, $style, $geometry) {
@@ -263,90 +232,9 @@ class UploadBehavior extends ModelBehavior {
 			$destFile = $path . $pathInfo['filename'] . '_' . $style . '.' . $pathInfo['extension'];
 		}
 
-		copy($srcFile, $destFile);
-		$pathinfo = pathinfo($srcFile);
-		$src = null;
-		$createHandler = null;
-		$outputHandler = null;
-		switch (strtolower($pathinfo['extension'])) {
-			case 'gif':
-				$createHandler = 'imagecreatefromgif';
-				$outputHandler = 'imagegif';
-				break;
-			case 'jpg':
-			case 'jpeg':
-				$createHandler = 'imagecreatefromjpeg';
-				$outputHandler = 'imagejpeg';
-				break;
-			case 'png':
-				$createHandler = 'imagecreatefrompng';
-				$outputHandler = 'imagepng';
-				break;
-			default:
-				return false;
-		}
-
-		if ($src = $createHandler($destFile)) {
-			$srcW = imagesx($src);
-			$srcH = imagesy($src);
-
-			// determine destination dimensions and resize mode from provided geometry
-			if (preg_match('/^\\[[\\d]+x[\\d]+\\]$/', $geometry)) {
-				// resize with banding
-				list($destW, $destH) = explode('x', substr($geometry, 1, strlen($geometry)-2));
-				$resizeMode = 'band';
-			} elseif (preg_match('/^[\\d]+x[\\d]+$/', $geometry)) {
-				// cropped resize (best fit)
-				list($destW, $destH) = explode('x', $geometry);
-				$resizeMode = 'best';
-			} elseif (preg_match('/^[\\d]+w$/', $geometry)) {
-				// calculate heigh according to aspect ratio
-				$destW = (int)$geometry-1;
-				$resizeMode = false;
-			} elseif (preg_match('/^[\\d]+h$/', $geometry)) {
-				// calculate width according to aspect ratio
-				$destH = (int)$geometry-1;
-				$resizeMode = false;
-			} elseif (preg_match('/^[\\d]+l$/', $geometry)) {
-				// calculate shortest side according to aspect ratio
-				if ($srcW > $srcH) $destW = (int)$geometry-1;
-				else $destH = (int)$geometry-1;
-				$resizeMode = false;
-			}
-			if (!isset($destW)) $destW = ($destH/$srcH) * $srcW;
-			if (!isset($destH)) $destH = ($destW/$srcW) * $srcH;
-
-			// determine resize dimensions from appropriate resize mode and ratio
-			if ($resizeMode == 'best') {
-				// "best fit" mode
-				if ($srcW > $srcH) {
-					if ($srcH/$destH > $srcW/$destW) $ratio = $destW/$srcW;
-					else $ratio = $destH/$srcH;
-				} else {
-					if ($srcH/$destH < $srcW/$destW) $ratio = $destH/$srcH;
-					else $ratio = $destW/$srcW;
-				}
-				$resizeW = $srcW*$ratio;
-				$resizeH = $srcH*$ratio;
-			} else if ($resizeMode == 'band') {
-				// "banding" mode
-				if ($srcW > $srcH) $ratio = $destW/$srcW;
-				else $ratio = $destH/$srcH;
-				$resizeW = $srcW*$ratio;
-				$resizeH = $srcH*$ratio;
-			} else {
-				// no resize ratio
-				$resizeW = $destW;
-				$resizeH = $destH;
-			}
-
-			$img = imagecreatetruecolor($destW, $destH);
-			imagefill($img, 0, 0, imagecolorallocate($img, 255, 255, 255));
-			imagecopyresampled($img, $src, ($destW-$resizeW)/2, ($destH-$resizeH)/2, 0, 0, $resizeW, $resizeH, $srcW, $srcH);
-			$outputHandler($img, $destFile);
-			return true;
-		}
-		return false;
+		App::import('Lib', 'Upload.Resize/Php');
+		$ResizePhp = new ResizePhp();
+		return $ResizePhp->resize($srcFile, $destFile, $geometry);
 	}
 
 	function _getPath(&$model, $field) {
