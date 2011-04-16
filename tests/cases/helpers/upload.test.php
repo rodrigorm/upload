@@ -1,5 +1,5 @@
 <?php
-App::import('Helper', 'Upload.Upload');
+App::import('Helper', array('Upload.Upload', 'Html'));
 
 class TestUpload extends CakeTestModel {
 	var $alias = 'Upload';
@@ -16,7 +16,12 @@ class TestUser extends CakeTestModel {
 	var $useTable = 'users';
 	var $actsAs = array(
 		'Upload.Upload' => array(
-			'photo'
+			'photo' => array(
+				'thumbsizes' => array(
+					'thumb' => '50x50',
+					'galeria' => '180x180'
+				)
+			)
 		)
 	);
 }
@@ -33,6 +38,7 @@ class UploadHelperTestCase extends CakeTestCase {
 	public function startTest($method) {
 		parent::startTest($method);
 		$this->Upload = new UploadHelper();
+		$this->Upload->Html = new HtmlHelper();
 		$this->Controller =& new TestUploadController();
 		$this->View =& new View($this->Controller);
 		$this->TestUpload = ClassRegistry::init('TestUpload');
@@ -169,5 +175,32 @@ class UploadHelperTestCase extends CakeTestCase {
 		$result = $this->Upload->url($this->record, 'Upload.photo');
 		$expected = '/files/upload/photo/Photo.png';
 		$this->assertEqual($result, $expected);
+	}
+
+	public function testUrlWhithThumbStyle() {
+		$result = $this->Upload->url($this->record, 'Upload.photo.thumb');
+		$expected = '/files/upload/photo/1/thumb_Photo.png';
+		$this->assertEqual($result, $expected);
+	}
+
+	public function testUrlWhithPrefixStyleDisabled() {
+		$this->TestUpload->Behaviors->detach('Upload');
+		$this->TestUpload->Behaviors->attach('Upload', array(
+			'photo' => array(
+				'prefixStyle' => false
+			)
+		));
+		$result = $this->Upload->url($this->record, 'Upload.photo.thumb');
+		$expected = '/files/upload/photo/1/Photo_thumb.png';
+		$this->assertEqual($result, $expected);
+	}
+
+	public function testImage() {
+		$result = $this->Upload->image($this->record, 'Upload.photo');
+		$this->assertTags($result, array(
+			'img' => array(
+				'src' => '/files/upload/photo/1/Photo.png', 'alt' => ''
+			)
+		));
 	}
 }

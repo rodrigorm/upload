@@ -442,3 +442,38 @@ Then you should do:
 <pre><code><?php echo $upload->url($data['User'][0], 'User.photo') ?></code></pre>
 
 The helper is smart enough to figure out the structure of data you pass to it.
+
+If you have defined thumbsizes on you model like:
+
+<pre><code><?php
+class User extends AppModel {
+	var $name = 'User';
+	var $actsAs = array(
+		'Upload.Upload' => array(
+			'photo' => array(
+				'thumbsizes' => array(
+					'thumb' => '50x50',
+					'galeria' => '180x180'
+				)
+			)
+		)
+	);
+}
+?>
+</code></pre>
+
+You can use helper to get url for any of thumb you defined:
+
+<pre><code><?php echo $upload->url($data['User'][0], 'User.photo.thumb') ?></code></pre>
+
+*UploadHelper::image($data, $field, $options = array())*
+
+Returns image tag pointing to uploaded file.
+
+* $data - record from database, can be a @$this->Model->read()@ result or a association result like @hasMany@
+* $field - name of a field like this @Modelname.fieldname@ (would be @User.photo@ here)
+* $options - array of HTML attributes.
+
+You can use like any of options of UploadHelper::url() explained above like:
+
+<pre><code><?php echo $upload->image($user, 'User.photo'); ?></code></pre>
