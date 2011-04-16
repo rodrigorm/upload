@@ -191,4 +191,48 @@ class UploadBehaviorTest extends CakeTestCase {
 		$this->assertEqual(1,count($result));
 		$this->assertEqual(4, count($result['TestUpload']));
 	}
+
+	protected function _testResizePhp($style, $geometry) {
+		$this->TestUpload->data = array(
+			'TestUpload' => array(
+				'photo' => 'panda.jpg'
+			)
+		);
+
+		$path = App::pluginPath('upload') . 'tests' . DS . 'images' . DS;
+		$result = $this->TestUpload->Behaviors->Upload->_resizePhp(
+			$this->TestUpload,
+			'photo',
+			$path,
+			$style,
+			$geometry
+		);
+		$this->assertTrue($result);
+
+		$result = $path . $style . '_panda.jpg';
+		$expected = $path . 'reference' . DS . $style . '_panda.jpg';
+		$this->assertTrue(file_exists($expected));
+		$this->assertEqual(md5_file($result), md5_file($expected));
+		@unlink($result);
+	}
+
+	public function testResizePhpBand() {
+		$this->_testResizePhp('band', '[150x100]');
+	}
+
+	public function testResizePhpBest() {
+		$this->_testResizePhp('best', '120x180');
+	}
+
+	public function testResizePhpWide() {
+		$this->_testResizePhp('wide', '150w');
+	}
+
+	public function testResizePhpHigh() {
+		$this->_testResizePhp('high', '100h');
+	}
+
+	public function testResizePhpSide() {
+		$this->_testResizePhp('side', '200l');
+	}
 }
