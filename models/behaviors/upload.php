@@ -88,7 +88,6 @@ class UploadBehavior extends ModelBehavior {
 				if (!in_array($options['pathMethod'], $this->_pathMethods)) {
 					$options['pathMethod'] = 'primaryKey';
 				}
-				$options['pathMethod'] = '_getPath' . Inflector::camelize($options['pathMethod']);
 				$options['thumbnailMethod'] = '_resize' . Inflector::camelize($options['thumbnailMethod']);
 				$this->settings[$model->alias][$field] = $options;
 			}
@@ -589,33 +588,19 @@ class UploadBehavior extends ModelBehavior {
 	}
 
 	function _getPath(&$model, $field) {
-		$path = $this->settings[$model->alias][$field]['path'];
 		$pathMethod = $this->settings[$model->alias][$field]['pathMethod'];
 
+		$pathMethod = '_getPath' . Inflector::camelize($pathMethod);
+
 		if (PHP5) {
-			if ($pathMethod == '_getPathFlat') {
-				return $this->_getPathFlat($model, $path);
-			}
-			if ($pathMethod == '_getPathRandom') {
-				return $this->_getPathRandom($model->data[$model->alias][$field], $path);
-			}
-			if ($pathMethod == '_getPathPrimaryKey') {
-				return $this->_getPathPrimaryKey($model, $path);
-			}
+			return $this->{$pathMethod}($model, $field);
 		} else {
-			if ($pathMethod == '_getPathFlat') {
-				return $this->_getPathFlat(&$model, $path);
-			}
-			if ($pathMethod == '_getPathRandom') {
-				return $this->_getPathRandom($model->data[$model->alias][$field], $path);
-			}
-			if ($pathMethod == '_getPathPrimaryKey') {
-				return $this->_getPathPrimaryKey(&$model, $path);
-			}
+			return $this->{$pathMethod}(&$model, $field);
 		}
 	}
 
-	function _getPathFlat(&$model, $path) {
+	function _getPathFlat(&$model, $field) {
+		$path = $this->settings[$model->alias][$field]['path'];
 		$destDir = ROOT . DS . APP_DIR . DS . $path;
 		if (!file_exists($destDir)) {
 			@mkdir($destDir, 0777, true);
@@ -624,7 +609,8 @@ class UploadBehavior extends ModelBehavior {
 		return '';
 	}
 
-	function _getPathPrimaryKey(&$model, $path) {
+	function _getPathPrimaryKey(&$model, $field) {
+		$path = $this->settings[$model->alias][$field]['path'];
 		$destDir = ROOT . DS . APP_DIR . DS . $path . $model->id . DIRECTORY_SEPARATOR;
 		if (!file_exists($destDir)) {
 			@mkdir($destDir, 0777, true);
@@ -633,7 +619,10 @@ class UploadBehavior extends ModelBehavior {
 		return $model->id;
 	}
 
-	function _getPathRandom($string, $path) {
+	function _getPathRandom(&$model, $field) {
+		$path = $this->settings[$model->alias][$field]['path'];
+		$string = $model->data[$model->alias][$field];
+
 		$endPath = null;
 		$decrement = 0;
 		$string = crc32($string . time());
