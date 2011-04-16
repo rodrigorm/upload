@@ -428,11 +428,11 @@ class UploadBehaviorTest extends CakeTestCase {
 	}
 
 	function testGetPathRandom() {
-		$result = $this->TestUpload->Behaviors->Upload->_getPathRandom('string', TMP);
+		$result = $this->TestUpload->Behaviors->Upload->_getPathRandom('string', 'tmp' . DS);
 
 		$this->assertIsA($result, 'String');
-		$this->assertEqual(9, strlen($result));
-		$this->assertTrue(is_dir(TMP . DIRECTORY_SEPARATOR . $result));
+		$this->assertEqual(8, strlen($result));
+		$this->assertTrue(is_dir(TMP . DS . $result));
 	}
 
 	function testReplacePath() {
