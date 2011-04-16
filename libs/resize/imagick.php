@@ -1,9 +1,9 @@
 <?php
 class ResizeImagick extends Object {
 	public function resize($srcFile, $destFile, $geometry, $quality) {
-		$image    = new imagick($srcFile);
-		$height   = $image->getImageHeight();
-		$width    = $image->getImageWidth();
+		$image  = new imagick($srcFile);
+		$height = $image->getImageHeight();
+		$width  = $image->getImageWidth();
 
 		if (preg_match('/^\\[[\\d]+x[\\d]+\\]$/', $geometry)) {
 			// resize with banding
