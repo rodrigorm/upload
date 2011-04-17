@@ -1,7 +1,19 @@
 <?php
 class Resize extends Object {
-	public function process($srcFile, $destFile, $geometry, $quality = 100) {
-		$image  = $this->_getImage($srcFile);
+	private $method;
+
+	private $source;
+
+	private $quality = 100;
+	
+	public function __construct($method, $source, $quality = 100) {
+		$this->method = $method;
+		$this->source = $source;
+		$this->quality = $quality;
+	}
+	
+	public function process($destFile, $geometry, $quality = 100) {
+		$image  = $this->_getImage($this->source);
 		$height = $image->getImageHeight();
 		$width  = $image->getImageWidth();
 
@@ -38,5 +50,11 @@ class Resize extends Object {
 	}
 
 	protected function _getImage($source) {
+		if ($this->method == 'imagick') {
+			return new imagick($ource);
+		}
+
+		App::import('Lib', 'Upload.ImageGd');
+		return new ImageGd($source);
 	}
 }

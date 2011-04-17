@@ -80,7 +80,6 @@ class UploadBehavior extends ModelBehavior {
 				if (!in_array($options['pathMethod'], $this->_pathMethods)) {
 					$options['pathMethod'] = 'primaryKey';
 				}
-				$options['thumbnailMethod'] = '_resize' . Inflector::camelize($options['thumbnailMethod']);
 				$this->settings[$model->alias][$field] = $options;
 			}
 		}
@@ -209,7 +208,7 @@ class UploadBehavior extends ModelBehavior {
 		return is_dir($this->settings[$model->alias][$field]['path']);
 	}
 
-	function _resizeImagick(&$model, $field, $path, $style, $geometry) {
+	function _resize(&$model, $field, $path, $style, $geometry) {
 		$srcFile  = $path . $model->data[$model->alias][$field];
 		$destFile = $path . $style . '_' . $model->data[$model->alias][$field];
 
@@ -218,23 +217,11 @@ class UploadBehavior extends ModelBehavior {
 			$destFile = $path . $pathInfo['filename'] . '_' . $style . '.' . $pathInfo['extension'];
 		}
 
-		App::import('Lib', 'Upload.Resize/Imagick');
-		$ResizeImagick = new ResizeImagick();
-		return $ResizeImagick->process($srcFile, $destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
-	}
+		$method = $options['thumbnailMethod'];
 
-	function _resizePhp(&$model, $field, $path, $style, $geometry) {
-		$srcFile  = $path . $model->data[$model->alias][$field];
-		$destFile = $path . $style . '_' . $model->data[$model->alias][$field];
+		$Resize = new Resize($method, $srcFile);
 
-		if (!$this->settings[$model->alias][$field]['prefixStyle']) {
-			$pathInfo = $this->_pathinfo($path . $model->data[$model->alias][$field]);
-			$destFile = $path . $pathInfo['filename'] . '_' . $style . '.' . $pathInfo['extension'];
-		}
-
-		App::import('Lib', 'Upload.Resize/Php');
-		$ResizePhp = new ResizePhp();
-		return $ResizePhp->process($srcFile, $destFile, $geometry);
+		return $Resize->process($destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
 	}
 
 	function _getPath(&$model, $field) {
@@ -317,10 +304,8 @@ class UploadBehavior extends ModelBehavior {
 		&& $this->settings[$model->alias][$field]['thumbnails']
 		&& !empty($this->settings[$model->alias][$field]['thumbsizes'])) {
 			// Create thumbnails
-			$method = $this->settings[$model->alias][$field]['thumbnailMethod'];
-
 			foreach ($this->settings[$model->alias][$field]['thumbsizes'] as $style => $geometry) {
-				if (!$this->$method($model, $field, $path, $style, $geometry)) {
+				if (!$this->_resize($model, $field, $path, $style, $geometry)) {
 					$model->invalidate($field, 'resizeFail');
 				}
 			}

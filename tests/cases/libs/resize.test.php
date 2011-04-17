@@ -1,33 +1,32 @@
 <?php
-App::import('Lib', 'Upload.Resize' . DS . 'Php');
+App::import('Lib', 'Upload.Resize');
 
-class ResizePhpTestCase extends CakeTestCase {
-	public $ResizePhp;
+class ResizeTestCase extends CakeTestCase {
+	public $Resize;
 
 	public function startTest($method) {
 		parent::startTest($method);
-		$this->ResizePhp = new ResizePhp();
+
+		$this->path = App::pluginPath('upload') . 'tests' . DS . 'images' . DS;
+		$this->source = $this->path . 'panda.jpg';
+		$this->Resize = new Resize('php', $this->source);
 	}
 
 	public function endTest($method) {
 		parent::endTest($method);
-		unset($this->ResizePhp);
+		unset($this->Resize);
 	}
 
 	protected function _testResize($style, $geometry) {
-		$path = App::pluginPath('upload') . 'tests' . DS . 'images' . DS;
+		$destination = $this->path . $style . '_panda.jpg';
 
-		$source = $path . 'panda.jpg';
-		$destination = $path . $style . '_panda.jpg';
-
-		$result = $this->ResizePhp->process(
-			$source,
+		$result = $this->Resize->process(
 			$destination,
 			$geometry
 		);
 		$this->assertTrue($result);
 
-		$expected = $path . 'reference' . DS . $style . '_panda.jpg';
+		$expected = $this->path . 'reference' . DS . $style . '_panda.jpg';
 		$this->assertTrue(file_exists($destination));
 		$this->assertEqual(md5_file($destination), md5_file($expected));
 		@unlink($destination);
