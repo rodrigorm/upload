@@ -208,22 +208,6 @@ class UploadBehavior extends ModelBehavior {
 		return is_dir($this->settings[$model->alias][$field]['path']);
 	}
 
-	function _resize(&$model, $field, $path, $style, $geometry) {
-		$srcFile  = $path . $model->data[$model->alias][$field];
-		$destFile = $path . $style . '_' . $model->data[$model->alias][$field];
-
-		if (!$this->settings[$model->alias][$field]['prefixStyle']) {
-			$pathInfo = $this->_pathinfo($path . $model->data[$model->alias][$field]);
-			$destFile = $path . $pathInfo['filename'] . '_' . $style . '.' . $pathInfo['extension'];
-		}
-
-		$method = $options['thumbnailMethod'];
-
-		$Resize = new Resize($method, $srcFile);
-
-		return $Resize->process($destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
-	}
-
 	function _getPath(&$model, $field) {
 		$pathMethod = $this->settings[$model->alias][$field]['pathMethod'];
 
@@ -300,27 +284,61 @@ class UploadBehavior extends ModelBehavior {
 	}
 
 	function _createThumbnails(&$model, $field, $path) {
-		if ($this->_isImage($model, $this->runtime[$model->alias][$field]['type'])
-		&& $this->settings[$model->alias][$field]['thumbnails']
-		&& !empty($this->settings[$model->alias][$field]['thumbsizes'])) {
-			// Create thumbnails
-			foreach ($this->settings[$model->alias][$field]['thumbsizes'] as $style => $geometry) {
-				if (!$this->_resize($model, $field, $path, $style, $geometry)) {
-					$model->invalidate($field, 'resizeFail');
-				}
+		if ($this->_dontGenerateThumbnail($model, $field)) {
+			return;
+		}
+		// Create thumbnails
+		foreach ($this->settings[$model->alias][$field]['thumbsizes'] as $style => $geometry) {
+			if (!$this->_resize($model, $field, $path, $style, $geometry)) {
+				$model->invalidate($field, 'resizeFail');
 			}
 		}
 	}
 
-	function _isImage(&$model, $mimetype) {
+	function _dontGenerateThumbnail($model, $field) {
+		return (
+			!$this->_isImage($this->runtime[$model->alias][$field]['type']) ||
+			!$this->settings[$model->alias][$field]['thumbnails'] ||
+			empty($this->settings[$model->alias][$field]['thumbsizes'])
+		);
+	}
+
+	function _resize(&$model, $field, $path, $style, $geometry) {
+		$filename = $model->data[$model->alias][$field];
+		$srcFile  = $path . $filename;
+
+		$destFile = $path . $style . '_' . $filename;
+		if ($this->_isSuffixStyle($model, $field)) {
+			$pathInfo = $this->_pathinfo($path . $filename);
+			$destFile = $path . $pathInfo['filename'] . '_' . $style . '.' . $pathInfo['extension'];
+		}
+
+		$method = $options['thumbnailMethod'];
+
+		$Resize = new Resize($method, $srcFile);
+
+		return $Resize->process($destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
+	}
+
+	function _isSuffixStyle($model, $field) {
+		return !$this->settings[$model->alias][$field]['prefixStyle'];
+	}
+
+	function _isImage($mimetype) {
 		return in_array($mimetype, $this->_imageMimetypes);
 	}
 
 	function _prepareFilesForDeletion(&$model, $field, $data, $options) {
 		$this->__filesToRemove[$model->alias] = array();
-		$this->__filesToRemove[$model->alias][] = ROOT . DS . APP_DIR . DS . $this->settings[$model->alias][$field]['path'] . $data[$model->alias][$options['fields']['dir']] . DS . $data[$model->alias][$field];
+
+		$appDir = ROOT . DS . APP_DIR . DS;
+		$path = $this->settings[$model->alias][$field]['path'];
+		$dir = $data[$model->alias][$options['fields']['dir']] . DS;
+		$filename = $data[$model->alias][$field];
+
+		$this->__filesToRemove[$model->alias][] = $appDir . $path . $dir . $filename;
 		foreach ($options['thumbsizes'] as $style => $geometry) {
-			$this->__filesToRemove[$model->alias][] = ROOT . DS . APP_DIR . DS . $this->settings[$model->alias][$field]['path'] . $data[$model->alias][$options['fields']['dir']] . DS . $style . '_' . $data[$model->alias][$field];
+			$this->__filesToRemove[$model->alias][] = $appDir . $path . $dir . $style . '_' . $filename;
 		}
 		return $this->__filesToRemove;
 	}

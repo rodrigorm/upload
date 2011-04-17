@@ -135,13 +135,13 @@ class UploadBehaviorTest extends CakeTestCase {
 			)
 		));
 
-		$result = $this->TestUpload->Behaviors->Upload->_isImage($this->TestUpload, 'image/bmp');
+		$result = $this->TestUpload->Behaviors->Upload->_isImage('image/bmp');
 		$this->assertTrue($result);
 
-		$result = $this->TestUpload->Behaviors->Upload->_isImage($this->TestUpload, 'image/jpeg');
+		$result = $this->TestUpload->Behaviors->Upload->_isImage('image/jpeg');
 		$this->assertTrue($result);
 
-		$result = $this->TestUpload->Behaviors->Upload->_isImage($this->TestUpload, 'application/zip');
+		$result = $this->TestUpload->Behaviors->Upload->_isImage('application/zip');
 		$this->assertFalse($result);
 	}
 
