@@ -191,4 +191,71 @@ class UploadBehaviorTest extends CakeTestCase {
 		$this->assertEqual(1,count($result));
 		$this->assertEqual(4, count($result['TestUpload']));
 	}
+
+	public function testSetupWithInvalidThumbnailMethod() {
+		$this->TestUpload->Behaviors->detach('Upload.Upload');
+		$this->TestUpload->Behaviors->attach('Upload.Upload', array(
+			'photo' => array(
+				'thumbnailMethod' => 'invalid'
+			)
+		));
+		$result = $this->TestUpload->Behaviors->Upload->settings['TestUpload']['photo']['thumbnailMethod'];
+		$this->assertEqual($result, 'imagick');
+	}
+
+	public function testSetupWithInvalidPathMethod() {
+		$this->TestUpload->Behaviors->detach('Upload.Upload');
+		$this->TestUpload->Behaviors->attach('Upload.Upload', array(
+			'photo' => array(
+				'pathMethod' => 'invalid'
+			)
+		));
+		$result = $this->TestUpload->Behaviors->Upload->settings['TestUpload']['photo']['pathMethod'];
+		$this->assertEqual($result, 'primaryKey');
+	}
+
+	public function testBeforeSave() {
+		$result = $this->TestUpload->save(array(
+			'photo' => array(
+				'name'  => 'Photo.png',
+				'tmp_name'  => '/tmp/Photo.png',
+				'type'  => 'image/png',
+				'size'  => 8192,
+				'error' => UPLOAD_ERR_OK,
+			)
+		));
+		$this->assertTrue($result);
+
+		$result = $this->TestUpload->read();
+		$this->assertEqual($result['TestUpload']['photo'], 'Photo.png');
+		$this->assertEqual($result['TestUpload']['size'], 8192);
+		$this->assertEqual($result['TestUpload']['type'], 'image/png');
+	}
+
+	public function testBeforeSaveWithRemoveFlag() {
+		$result = $this->TestUpload->save(array(
+			'id' => 1,
+			'photo' => array(
+				'remove' => true
+			)
+		));
+		$this->assertTrue($result);
+
+		$filesToRemove = $this->TestUpload->Behaviors->Upload->__filesToRemove;
+		$this->assertEqual(count($filesToRemove), 1);
+
+		$expected = ROOT . DS . APP_DIR . DS . 'webroot' . DS . 'files' . DS . 'test_upload' . DS . 'photo' . DS . '1' . DS . 'Photo.png';
+		$this->assertEqual($filesToRemove['TestUpload'][0], $expected);
+	}
+
+	public function testBeforeDelete() {
+		$result = $this->TestUpload->delete(1);
+		$this->assertTrue($result);
+
+		$filesToRemove = $this->TestUpload->Behaviors->Upload->__filesToRemove;
+		$this->assertEqual(count($filesToRemove), 1);
+
+		$expected = ROOT . DS . APP_DIR . DS . 'webroot' . DS . 'files' . DS . 'test_upload' . DS . 'photo' . DS . '1' . DS . 'Photo.png';
+		$this->assertEqual($filesToRemove['TestUpload'][0], $expected);
+	}
 }
