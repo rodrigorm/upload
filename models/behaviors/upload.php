@@ -313,11 +313,13 @@ class UploadBehavior extends ModelBehavior {
 			$destFile = $path . $pathInfo['filename'] . '_' . $style . '.' . $pathInfo['extension'];
 		}
 
+		$options = $this->settings[$model->alias][$field];
 		$method = $options['thumbnailMethod'];
 
+		App::import('Lib', 'Upload.Resize');
 		$Resize = new Resize($method, $srcFile);
 
-		return $Resize->process($destFile, $geometry, $this->settings[$model->alias][$field]['thumbnailQuality']);
+		return $Resize->process($destFile, $geometry, $options['thumbnailQuality']);
 	}
 
 	function _isSuffixStyle($model, $field) {
