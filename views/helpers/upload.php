@@ -15,6 +15,13 @@ class UploadHelper extends AppHelper {
 		$dir = $this->_dir($data);
 		$filename = $this->_filename($data);
 
+		$Model = ClassRegistry::init($this->model());
+		$filePath = ROOT . DS . APP_DIR . DS . str_replace('/', DS, "/{$path}{$dir}/{$filename}");
+		if (!file_exists($filePath) && !empty($data[$Model->primaryKey])) {
+			$Model->id = $data[$Model->primaryKey];
+			$Model->createThumbnail($this->field(), $this->_style());
+		}
+
 		return parent::url($this->webroot("/{$path}{$dir}/{$filename}"), $full);
 	}
 
@@ -34,7 +41,7 @@ class UploadHelper extends AppHelper {
 			return '';
 		}
 
-		return $data[$this->_dirField()];
+		return str_replace(DS, '/', $data[$this->_dirField()]);
 	}
 
 	protected function _dirField() {
@@ -45,8 +52,7 @@ class UploadHelper extends AppHelper {
 		$filename = $data[$this->field()];
 
 		// @TODO: Remove duplication from this and UploadBehavior
-		$view =& ClassRegistry::getObject('view');
-		$style = $view->fieldSuffix;
+		$style = $this->_style();
 		if (!empty($style)) {
 			$prefixStyle = $this->_settings('prefixStyle');
 			if ($prefixStyle) {
@@ -69,6 +75,11 @@ class UploadHelper extends AppHelper {
 		$settings = $Model->Behaviors->Upload->settings[$Model->alias][$this->field()];
 
 		return Set::extract($settings, $name);
+	}
+
+	protected function _style() {
+		$view =& ClassRegistry::getObject('view');
+		return $view->fieldSuffix;
 	}
 
 	public function image($data, $fieldName, $options = array()) {

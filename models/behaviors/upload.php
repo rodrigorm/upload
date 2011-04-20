@@ -355,4 +355,20 @@ class UploadBehavior extends ModelBehavior {
 		}
 		return $pathinfo;
 	}
+
+	function createThumbnail(&$model, $field, $style) {
+		$model->data = $model->read();
+		$temp = array($model->alias => array());
+
+		if (!in_array($field, array_keys($model->data[$model->alias]))) return false;
+		if (empty($model->data[$model->alias][$field])) return false;
+		if (empty($this->settings[$model->alias][$field]['thumbsizes'][$style])) return false;
+
+		$tempPath = $this->_getPath($model, $field);
+		$path = ROOT . DS . APP_DIR . DS . $this->settings[$model->alias][$field]['path'];
+		$path .= $tempPath . DS;
+		$geometry = $this->settings[$model->alias][$field]['thumbsizes'][$style];
+
+		return $this->_resize($model, $field, $path, $style, $geometry);
+	}
 }
