@@ -22,16 +22,15 @@ class UploadHelper extends AppHelper {
 			$Model->createThumbnail($this->field(), $this->_style());
 		}
 
+		if (substr($path, 0, 8) == 'webroot/') {
+			$path = substr($path, 8);
+		}
+
 		return parent::url($this->webroot("/{$path}{$dir}/{$filename}"), $full);
 	}
 
 	protected function _path() {
 		$path = $this->_settings('path');
-
-		if (substr($path, 0, 8) == 'webroot' . DS) {
-			$path = substr($path, 8);
-		}
-
 		return str_replace(DS, '/', $path);
 	}
 
