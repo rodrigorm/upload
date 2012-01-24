@@ -214,11 +214,7 @@ class UploadBehavior extends ModelBehavior {
 
 		$pathMethod = '_getPath' . Inflector::camelize($pathMethod);
 
-		if (PHP5) {
-			return $this->{$pathMethod}($model, $field);
-		} else {
-			return $this->{$pathMethod}(&$model, $field);
-		}
+		return $this->{$pathMethod}($model, $field);
 	}
 
 	function _getPathFlat(&$model, $field) {
