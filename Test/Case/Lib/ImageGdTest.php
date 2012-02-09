@@ -9,7 +9,7 @@ class ImageGdTestCase extends CakeTestCase {
 	public function startTest($method) {
 		parent::startTest($method);
 
-		$this->path = App::pluginPath('upload') . 'tests' . DS . 'images' . DS;
+		$this->path = App::pluginPath('Upload') . 'Test' . DS . 'images' . DS;
 		$source = $this->path . 'panda.jpg';
 		$this->ImageGd = new ImageGd($source);
 	}

@@ -1,5 +1,6 @@
 <?php
 App::import('Helper', array('Upload.Upload', 'Html'));
+App::uses('Controller', 'Controller');
 
 class TestUploadHelperUpload extends CakeTestModel {
 	var $alias = 'Upload';
@@ -37,10 +38,10 @@ class UploadHelperTestCase extends CakeTestCase {
 
 	public function startTest($method) {
 		parent::startTest($method);
-		$this->Upload = new UploadHelper();
-		$this->Upload->Html = new HtmlHelper();
-		$this->Controller =& new TestUploadHelperUploadController();
+		$this->Controller =& new TestUploadHelperUploadController(new CakeRequest());
 		$this->View =& new View($this->Controller);
+		$this->Upload = new UploadHelper($this->View);
+		$this->Upload->Html = new HtmlHelper($this->View);
 		$this->TestUpload = ClassRegistry::init('TestUploadHelperUpload');
 		$this->TestUser = ClassRegistry::init('TestUploadHelperTestUser');
 

@@ -77,11 +77,25 @@ class UploadHelper extends AppHelper {
 	}
 
 	protected function _style() {
-		$view =& ClassRegistry::getObject('view');
-		return $view->fieldSuffix;
+		$entity = $this->entity();
+		$count = count($entity);
+		if ($count > 2) {
+			return $entity[$count - 1];
+		}
+		return null;
 	}
 
 	public function image($data, $fieldName, $options = array()) {
 		return $this->Html->image($this->url($data, $fieldName), $options);
+	}
+
+	public function field() {
+		$entity = $this->entity();
+		$count = count($entity);
+		$last = $entity[$count - 1];
+		if ($count > 2) {
+			$last = isset($entity[$count - 2]) ? $entity[$count - 2] : null;
+		}
+		return $last;
 	}
 }

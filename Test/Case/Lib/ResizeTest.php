@@ -7,7 +7,7 @@ class ResizeTestCase extends CakeTestCase {
 	public function startTest($method) {
 		parent::startTest($method);
 
-		$this->path = App::pluginPath('upload') . 'tests' . DS . 'images' . DS;
+		$this->path = App::pluginPath('Upload') . 'Test' . DS . 'images' . DS;
 		$this->source = $this->path . 'panda.jpg';
 		$this->Resize = new Resize('php', $this->source);
 	}
